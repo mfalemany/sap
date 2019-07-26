@@ -1,0 +1,531 @@
+<?php
+class ci_detalles_proyecto extends sap_ci
+{
+	protected $s__duracion;
+	protected $s__id_area;
+	protected $s__id_area_tematica;
+	protected $s__integrantes_inicial;
+	protected $s__id_proyecto;
+	protected $s__auxiliares;
+
+	function conf()
+	{
+		$datos = $this->get_datos('proyectos')->get();
+
+		if($datos){
+			/* =======================Cargo los registros auxiliares =========================================*/
+			if(isset($datos['id'])){
+				$this->s__id_proyecto = $datos['id'];
+				$funciones = array(
+					array('auxiliar' => 'tesistas',   'tabla' => 'sap_proyecto_tesista'),
+					array('auxiliar' => 'alumnos',    'tabla' => 'sap_proyecto_alumno'),
+					array('auxiliar' => 'becarios',   'tabla' => 'sap_proyecto_becario'),
+					array('auxiliar' => 'apoyo',      'tabla' => 'sap_proyecto_apoyo'),
+					array('auxiliar' => 'inv_externo','tabla' => 'sap_proyecto_inv_externo'),
+
+				);
+				foreach($funciones as $funcion){
+					if( ! isset($this->s__auxiliares[$funcion['auxiliar']]) || ! $this->s__auxiliares[$funcion['auxiliar']] ){
+						$this->s__auxiliares[$funcion['auxiliar']] = toba::consulta_php('co_proyectos')->get_miembros(array('id_proyecto' => $datos['id']),$funcion['tabla']);	
+					}
+				}
+			}else{
+				unset($this->s__id_proyecto);
+			}
+			/* ===============================================================================================*/
+
+			
+
+			if(isset($datos['fecha_desde']) && isset($datos['fecha_hasta'])){
+				//Obtengo la duracion del proyecto en base a las fechas desde y hasta
+				$this->s__duracion = date('Y',strtotime($datos['fecha_hasta'])) - date('Y',strtotime($datos['fecha_desde']));	
+			}
+			if(isset($datos['id_subarea'])){
+				//obtengo el area del proyecto
+				$this->s__id_area = toba::consulta_php('co_proyectos')->get_area(array('id_subarea'=>$datos['id_subarea']));
+			}
+			if(isset($datos['id_subarea_prioritaria'])){
+				//obtengo el area "prioritaria o temática" (area de programas) del proyecto
+				$this->s__id_area_tematica = toba::consulta_php('co_programas')->get_area_de_subarea($datos['id_subarea_prioritaria']);
+			}
+			/* ===================================================================================== */
+			// Dependiendo del tipo de proyecto que se esté cargando, se muestran/ocultan los 
+			// formularios de PI y PDTS respectivamente
+			if($datos['tipo'] == '0'){
+				if($this->pantalla()->existe_dependencia('form_detalles_pdts')){
+					$this->pantalla()->eliminar_dep('form_detalles_pdts');
+					$this->pantalla()->eliminar_dep('ml_instituciones');
+					$this->pantalla()->eliminar_dep('ml_agentes_financieros');
+				}
+			}
+			if($datos['tipo'] == 'D'){
+
+				if($this->pantalla()->existe_dependencia('form_detalles_pi')){
+					$this->pantalla()->eliminar_dep('form_detalles_pi');
+				}	
+			}
+			/* ===================================================================================== */
+		}else{
+			unset($this->s__duracion);
+			unset($this->s__id_area);
+			unset($this->s__id_area_tematica);
+			unset($this->s__integrantes_inicial);
+			unset($this->s__id_proyecto);
+		}
+
+	}
+	//-----------------------------------------------------------------------------------
+	//---- Eventos ----------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function evt__guardar()
+	{
+		try {
+			if($this->validar_integrantes()){
+				
+				
+				//Sincronizo con fuente
+				toba::db()->ejecutar("BEGIN; LOCK TABLE sap_proyectos IN EXCLUSIVE MODE;");
+				$this->get_datos()->sincronizar();
+				$id = toba::db()->consultar_fila("SELECT max(id) as id FROM sap_proyectos;");
+				$this->s__id_proyecto = $id['id'];
+				toba::db()->ejecutar("COMMIT;");
+				//se registran todos los cambios en las tablas auxiliares
+				$this->registrar_cambios_integrantes();
+				//Y si todo salió bien...
+				toba::notificacion()->agregar('Los datos se guardaron con éxito','info');
+				//se elimina la variable de sesión para que en el siguiente pedido de pagina, se carge desde el DT
+				unset($this->s__auxiliares);	
+			}
+		} catch (toba_error_db $e) {
+			switch ($e->get_sqlstate()) {
+				case 'db_23503':
+					$mensaje = "Alguno de los integrantes que está declarando, no tienen su información completa en la solapa 'Recursos Humanos'.";
+					break;
+				
+				default:
+					$mensaje = "Ocurrió el siguiente error desconocido: ".$e->get_mensaje();
+					break;
+			}
+			
+			toba::notificacion()->agregar($mensaje.$e->get_sqlstate().$e->get_mensaje_motor());
+		} catch (Exception $e) {
+			toba::notificacion()->agregar('Ocurrió el siguiente problema: '.$e->getMessage());
+		}
+		
+	}
+
+	function evt__cancelar()
+	{
+		unset($this->s__auxiliares);
+		$this->get_datos()->resetear();
+		$this->controlador()->set_pantalla('pant_seleccion_proyecto');
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- form_proyecto ----------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__form_proyecto(form_proyecto $form)
+	{
+		$datos = $this->get_datos('proyectos')->get();
+		
+		if($datos){
+			//Obtengo el area correspondiente del proyecto
+			$datos['id_area'] = $this->s__id_area;
+			//Obtengo la duración del proyecto
+			$datos['duracion'] = $this->s__duracion;
+			//Obtengo el area_tematica correspondiente del proyecto
+			$datos['id_area_tematica'] = $this->s__id_area_tematica;
+
+			$form->set_datos($datos);
+		}
+
+	}
+
+	function evt__form_proyecto__modificacion($datos)
+	{
+		//variable de sesion que sirve como base en varios cálculos a lo largo de la carga
+		$this->s__duracion = $datos['duracion'];
+		//variable que almacena temporalmente el id_area (que no se almacena en datos_tabla)
+		$this->s__id_area = $datos['id_area'];
+		//variable que almacena temporalmente el id_area_tematica
+		$this->s__id_area_tematica = $datos['id_area_tematica'];
+		//se calcula la fecha_hasta del proyecto en base a la duración seleccionada
+		$datos['fecha_hasta'] = $this->obtener_fecha_hasta($datos['fecha_desde'],$datos['duracion']);
+
+		
+		$this->get_datos('proyectos')->set($datos);
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- ml_integrantes ---------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_integrantes(sap_ei_formulario_ml $form_ml)
+	{
+		$this->s__integrantes_inicial = $this->get_datos('proyecto_integrante')->get_filas();
+		if($this->s__integrantes_inicial){
+			$form_ml->set_datos($this->s__integrantes_inicial);
+		}
+	}
+
+	function evt__ml_integrantes__modificacion($datos)
+	{
+		/* En este punto, hay que re-generar todos los registros de las tablas auxiliares: 
+		* proyecto_tesista, proyecto_becario, proyecto_alumno, proyecto_inv_externo, proyecto_apoyo
+		*/
+		
+		$this->existen_duplicados($datos);
+		$this->get_datos('proyecto_integrante')->procesar_filas($datos);
+		//$this->regenerar_auxiliares_integrante($datos);
+	}
+
+	function evt__ml_integrantes__pedido_registro_nuevo()
+	{
+		//seteo la fecha de inicio del proyecto como fecha desde para los integrantes
+		$datos = $this->get_datos('proyectos')->get();
+		if($datos){
+			$this->dep('ml_integrantes')->set_registro_nuevo(array('fecha_desde'=>$datos['fecha_desde']));	
+		}
+	}
+
+	function conf_evt__ml_integrantes__editar_info(toba_evento_usuario $evento, $fila)
+	{
+		$filas = $this->dep('ml_integrantes')->get_datos();
+		$indice_filas = array_column($filas,'x_dbr_clave');
+		$indice = array_search($fila,$indice_filas);
+		
+		if($indice !== FALSE){
+			if(isset($filas[$indice]['nro_documento']) && $filas[$indice]['nro_documento']){
+				$evento->vinculo()->agregar_parametro('nro_documento',$filas[$indice]['nro_documento']);
+				$evento->mostrar();
+				return;
+			}
+		}
+		$evento->ocultar();
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- form_detalles_pi -------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__form_detalles_pi(sap_ei_formulario $form)
+	{
+		$datos = $this->get_datos('proyectos_pi')->get();
+		if($datos){
+			$form->set_datos($datos);
+		}
+	}
+
+	function evt__form_detalles_pi__modificacion($datos)
+	{
+		$this->get_datos('proyectos_pi')->set($datos);
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- form_detalles_pdts -----------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__form_detalles_pdts(sap_ei_formulario $form)
+	{
+		$datos = $this->get_datos('proyectos_pdts')->get();
+		if($datos){
+			$form->set_datos($datos);
+		}
+	}
+
+	function evt__form_detalles_pdts__modificacion($datos)
+	{
+		$this->get_datos('proyectos_pdts')->set($datos);
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- ml_instituciones -------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_instituciones(sap_ei_formulario_ml $form_ml)
+	{
+		$datos = $this->get_datos('proy_pdts_institucion')->get_filas();
+		if($datos){
+			$form_ml->set_datos($datos);
+		}
+	}
+
+	function evt__ml_instituciones__modificacion($datos)
+	{
+		$this->get_datos('proy_pdts_institucion')->procesar_filas($datos);
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- ml_agentes_financieros -------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_agentes_financieros(sap_ei_formulario_ml $form_ml)
+	{
+		$datos = $this->get_datos('proyecto_agente_financiero')->get_filas();
+		if($datos){
+			$form_ml->set_datos($datos);
+		}
+	}
+
+	function evt__ml_agentes_financieros__modificacion($datos)
+	{
+		$this->get_datos('proyecto_agente_financiero')->procesar_filas($datos);
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- ml_tesistas ------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_tesistas(sap_ei_formulario_ml $form_ml)
+	{
+		$this->configurar_formulario($form_ml,'P','tesistas');	
+	}
+
+	
+
+	function evt__ml_tesistas__modificacion($datos)
+	{
+		foreach($datos as $tesista){
+			$this->s__auxiliares['tesistas'][$tesista['nro_documento']] = array(
+				'nro_documento' => $tesista['nro_documento'],
+				'carrera'       => $tesista['carrera'],
+				'institucion'   => $tesista['institucion'],
+				'anio_inicio'   => $tesista['anio_inicio']
+			);
+		}
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- ml_becarios ------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_becarios(sap_ei_formulario_ml $form_ml)
+	{
+		$this->configurar_formulario($form_ml,'B','becarios');
+	}
+
+	function evt__ml_becarios__modificacion($datos)
+	{
+		foreach($datos as $becario){
+			$this->s__auxiliares['becarios'][$becario['nro_documento']] = array(
+				'nro_documento' => $becario['nro_documento'],
+				'id_tipo_beca'  => $becario['id_tipo_beca'],
+				'anio_fin'      => $becario['anio_fin'],
+				'anio_inicio'   => $becario['anio_inicio']
+			);
+		}
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- ml_alumnos -------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_alumnos(sap_ei_formulario_ml $form_ml)
+	{
+		$this->configurar_formulario($form_ml,'A','alumnos');
+	}
+
+	function evt__ml_alumnos__modificacion($datos)
+	{
+		foreach($datos as $alumno){
+			$this->s__auxiliares['alumnos'][$alumno['nro_documento']] = array(
+				'nro_documento'  => $alumno['nro_documento'],
+				'id_carrera'     => $alumno['id_carrera'],
+				'porc_mat_aprob' => $alumno['porc_mat_aprob']
+			);
+		}
+	}
+
+
+
+	//-----------------------------------------------------------------------------------
+	//---- Javascript -------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function extender_objeto_js()
+	{
+		echo "
+			//LLAMADA DE ATENCIÓN PARA QUE NO SE LE CIERRE LA SESIÓN
+			//Cada 15 minutos: 15 minutos por 60 segundos por 1000 (porque es en milesimas de segundo)
+			setInterval(function(){
+				alert('Asegurese de guardar, al menos, parcialmente los cambios que vaya realizando. En caso contrario, si su sesión finaliza por inactividad, podría perder toda la información cargada hasta el momento.');
+			}, (15*60*1000) );
+		";
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- Auxiliares -------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+	function configurar_formulario(&$formulario,$identificador_perfil,$auxiliar)
+	{
+		$integrantes = $this->get_datos('proyecto_integrante')->get_filas();
+		$funcion = toba::consulta_php('co_proyectos')->get_funcion($identificador_perfil);
+		$miembros = array_filter($integrantes,function($integrante) use ($funcion){
+			return ($integrante['id_funcion'] == $funcion['id_funcion']);
+		});
+		//Agrego todos los miembros nuevos... los que ya estaban no se modifican
+		foreach($miembros as $miembro){
+			if( ! isset($this->s__auxiliares[$auxiliar][$miembro['nro_documento']])){
+				$this->s__auxiliares[$auxiliar][$miembro['nro_documento']] = $miembro;
+			}
+		}
+		//borro todos los miembros que estaban y ya no figuran
+		if(isset($this->s__auxiliares[$auxiliar])){
+			foreach ($this->s__auxiliares[$auxiliar] as $nro_documento => $miembro) {
+				if( ! in_array($nro_documento,array_column($miembros,'nro_documento')) ){
+					unset($this->s__auxiliares[$auxiliar][$nro_documento]);
+				}
+			}
+			$formulario->set_datos($this->s__auxiliares[$auxiliar]);
+		}
+	}
+
+	function get_datos($tabla = NULL){
+		return ($tabla) ? $this->dep('datos')->tabla($tabla) : $this->dep('datos');
+	}
+	function get_ayn($nro_documento)
+	{
+		return toba::consulta_php('co_personas')->get_ayn($nro_documento);
+	}
+	/**
+	 * Funcion que recibe la fecha de inicio del proyecto y la duración en años (un numero entero), y retorna una fecha en formato String que representa la fecha de finalización del proyecto
+	 * @return [String] [Fecha de finalización del proyecto]
+	 */
+	function obtener_fecha_hasta($fecha_desde,$duracion)
+	{
+		//Cálculo de la fecha de finalización del proyecto
+		$fecha_desde = new DateTime($fecha_desde);
+		$intervalo = new DateInterval('P'.$duracion.'Y'); //P2Y o P4Y dependiendo de la duracion
+		return $fecha_desde->add($intervalo)->format('Y-m-d');
+	}
+
+	/**
+	 * Valida todas las condiciones que debe cumplir un proyecto en relación a sus integrantes. Por ejemplo, que exista un director (y solo uno), etc.
+	 * @return [boolean] [Verdadero en caso de cumplir con todas las condiciones]
+	 */
+	function validar_integrantes()
+	{
+		$integrantes = $this->get_datos('proyecto_integrante')->get_filas();
+		//Matriz de validaciones que se hacen a los integrantes
+		$perfiles_validacion = array(
+										'D'=>array('unico'=>TRUE,'obligatorio'=>TRUE),
+										'C'=>array('unico'=>TRUE,'obligatorio'=>FALSE),
+										'S'=>array('unico'=>TRUE,'obligatorio'=>FALSE),
+										'I'=>array('unico'=>FALSE,'obligatorio'=>FALSE)
+									);
+		try {
+			/** ACÁ VAN TODAS LAS VALIDACIONES DE INTEGRANTES 
+			* Todas las llamadas a funciones deben lanzar una excepción en caso de no cumplirse
+			*/
+
+			$this->validar_perfiles($integrantes,$perfiles_validacion);	
+
+			return TRUE;
+		} catch (Exception $e) {
+			toba::notificacion()->agregar($e->getMessage(),'warning');
+			return FALSE;
+		}
+	}
+
+	function validar_perfiles($integrantes,$perfiles_validacion)
+	{
+		//El array $perfiles, contiene la distribucion de funciones, es decir:
+		// -El perfil 1, aparece 1 vez
+		// -El perfil 2, aparece 1 vez
+		// -El perfil 7 aparece 6 veces, etc.
+		$perfiles = array_count_values(array_column($integrantes, 'id_funcion'));
+
+		foreach ($perfiles_validacion as $identificador_perfil => $condiciones) {
+			//Obtengo el ID de funcion que corresponde al perfil
+			$funcion = toba::consulta_php('co_proyectos')->get_funcion($identificador_perfil);	
+
+			//Es obligatorio?
+			if($condiciones['obligatorio']){
+				// Existe?
+				if( ! array_key_exists($funcion['id_funcion'], $perfiles)){
+					throw new Exception("Debe existir un integrante que tenga asigada la función de {$funcion['funcion']}", 1);
+				}
+			}
+			//Debería ser unico?
+			if($condiciones['unico']){
+				//Es realmente único?
+				
+				if( isset($perfiles[$funcion['id_funcion']]) && $perfiles[$funcion['id_funcion']] > 1){
+					throw new Exception("No puede existir mas de un integrante con la función de {$funcion['funcion']}", 1);
+				}
+			}
+		}
+	}
+
+	function registrar_cambios_integrantes()
+	{
+		if(isset($this->s__id_proyecto)){
+			toba::consulta_php('co_proyectos')->eliminar_auxiliares($this->s__id_proyecto);
+		}
+		$funciones = array(
+			array('auxiliar'=>'tesistas',   'tabla'=>'sap_proyecto_tesista',    'identificador_perfil'=>'P'),
+			array('auxiliar'=>'becarios',   'tabla'=>'sap_proyecto_becario',    'identificador_perfil'=>'B'),
+			array('auxiliar'=>'alumnos',    'tabla'=>'sap_proyecto_alumno' ,    'identificador_perfil'=>'A'),
+			array('auxiliar'=>'inv_externo','tabla'=>'sap_proyecto_inv_externo','identificador_perfil'=>'X'),
+			array('auxiliar'=>'apoyo',      'tabla'=>'sap_proyecto_apoyo',      'identificador_perfil'=>'T')
+		);
+
+		foreach($funciones as $funcion){
+			//obtengo el ID de la funcion
+			$perfil = toba::consulta_php('co_proyectos')->get_funcion($funcion['identificador_perfil']);
+			if(! array_key_exists($funcion['auxiliar'], $this->s__auxiliares)){
+				continue;	
+			}
+			foreach($this->s__auxiliares[$funcion['auxiliar']] as $elementos){
+
+				$campos = array('id_proyecto','id_funcion');
+				$valores = array($this->s__id_proyecto,$perfil['id_funcion']);
+				foreach($elementos as $campo => $valor){
+					$campos[] = $campo;
+					$valores[] = quote($valor);
+				}
+				$campos = implode(',',$campos);
+				$valores = implode(',',$valores);
+				toba::db()->ejecutar("INSERT INTO {$funcion['tabla']} ($campos) VALUES ($valores)");
+			}
+		}
+	}
+
+	function existen_duplicados($integrantes)
+	{
+		$mensajes = array();
+		//Busco los nro_documento repetidos en la lista
+		$duplicados = array_filter(array_count_values(array_column($integrantes, 'nro_documento')),function($num){
+			return $num > 1;
+		});
+		//recorro cada uno de los integrantes que aparecen dos veces o mas
+		foreach ($duplicados as $nro_documento => $cantidad) {
+			//"use" hace que la variable "nro_documento" esté en el scope de la funcion que recibe array_filter()
+			$ocurrencias = array_filter($integrantes,function($integrante) use ($nro_documento){
+				return (isset($integrante['nro_documento'])) ? ($integrante['nro_documento'] == $nro_documento) : FALSE;
+			});
+			
+			$iguales = array_filter(array_count_values(array_column($ocurrencias,'id_funcion')),function($num){
+				return $num > 1;
+			});
+			if(count($iguales)){
+				$mensajes[] = 'El integrante '.$this->get_ayn($nro_documento)." se declaró dos veces con la misma función";
+			}
+			
+		}
+		if(count($mensajes)){
+			$mensaje = "Se encontraron los siguientes problemas:<br>".implode("<br>",$mensajes);
+			throw new toba_error($mensaje,'Los integrantes pueden declararse mas de una vez, pero deben tener funciones distintas. Por ejemplo, un integrante puede declararse como estudiante de grado (durante un periodo determinado), y declararse nuevamente como tesista de posgrado (en otro periodo posterior).','Integrantes duplicados');
+		}
+
+	}
+	
+
+	
+
+	
+
+}
+?>
