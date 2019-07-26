@@ -287,5 +287,6 @@ class co_tablas_basicas
 		$carrera = toba::db()->consultar_fila('SELECT carrera FROM be_carreras WHERE id_carrera = '.quote($id));
 		return $carrera['carrera'];
 	}
+	
 }
 ?>

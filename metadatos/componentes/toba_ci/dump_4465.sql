@@ -231,6 +231,18 @@ INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objet
 );
 INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
 	'sap', --proyecto
+	'3238', --dep_id
+	'4465', --objeto_consumidor
+	'4492', --objeto_proveedor
+	'ml_apoyo', --identificador
+	NULL, --parametros_a
+	NULL, --parametros_b
+	NULL, --parametros_c
+	NULL, --inicializar
+	NULL  --orden
+);
+INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
+	'sap', --proyecto
 	'3235', --dep_id
 	'4465', --objeto_consumidor
 	'4489', --objeto_proveedor
@@ -259,6 +271,42 @@ INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objet
 	'4465', --objeto_consumidor
 	'4472', --objeto_proveedor
 	'ml_integrantes', --identificador
+	NULL, --parametros_a
+	NULL, --parametros_b
+	NULL, --parametros_c
+	NULL, --inicializar
+	NULL  --orden
+);
+INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
+	'sap', --proyecto
+	'3237', --dep_id
+	'4465', --objeto_consumidor
+	'4491', --objeto_proveedor
+	'ml_inv_externos', --identificador
+	NULL, --parametros_a
+	NULL, --parametros_b
+	NULL, --parametros_c
+	NULL, --inicializar
+	NULL  --orden
+);
+INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
+	'sap', --proyecto
+	'3246', --dep_id
+	'4465', --objeto_consumidor
+	'4500', --objeto_proveedor
+	'ml_obj_especificos', --identificador
+	NULL, --parametros_a
+	NULL, --parametros_b
+	NULL, --parametros_c
+	NULL, --inicializar
+	NULL  --orden
+);
+INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
+	'sap', --proyecto
+	'3247', --dep_id
+	'4465', --objeto_consumidor
+	'4501', --objeto_proveedor
+	'ml_tareas', --identificador
 	NULL, --parametros_a
 	NULL, --parametros_b
 	NULL, --parametros_c
@@ -379,6 +427,25 @@ INSERT INTO apex_objeto_ci_pantalla (objeto_ci_proyecto, objeto_ci, pantalla, id
 	NULL, --template_impresion
 	'20'  --punto_montaje
 );
+INSERT INTO apex_objeto_ci_pantalla (objeto_ci_proyecto, objeto_ci, pantalla, identificador, orden, etiqueta, descripcion, tip, imagen_recurso_origen, imagen, objetos, eventos, subclase, subclase_archivo, template, template_impresion, punto_montaje) VALUES (
+	'sap', --objeto_ci_proyecto
+	'4465', --objeto_ci
+	'1972', --pantalla
+	'pant_plan_tareas', --identificador
+	'6', --orden
+	'Plan de Tareas', --etiqueta
+	NULL, --descripcion
+	NULL, --tip
+	'apex', --imagen_recurso_origen
+	NULL, --imagen
+	NULL, --objetos
+	NULL, --eventos
+	NULL, --subclase
+	NULL, --subclase_archivo
+	NULL, --template
+	NULL, --template_impresion
+	'20'  --punto_montaje
+);
 --- FIN Grupo de desarrollo 0
 
 ------------------------------------------------------------
@@ -449,10 +516,38 @@ INSERT INTO apex_objetos_pantalla (proyecto, pantalla, objeto_ci, orden, dep_id)
 );
 INSERT INTO apex_objetos_pantalla (proyecto, pantalla, objeto_ci, orden, dep_id) VALUES (
 	'sap', --proyecto
+	'1969', --pantalla
+	'4465', --objeto_ci
+	'3', --orden
+	'3237'  --dep_id
+);
+INSERT INTO apex_objetos_pantalla (proyecto, pantalla, objeto_ci, orden, dep_id) VALUES (
+	'sap', --proyecto
+	'1969', --pantalla
+	'4465', --objeto_ci
+	'4', --orden
+	'3238'  --dep_id
+);
+INSERT INTO apex_objetos_pantalla (proyecto, pantalla, objeto_ci, orden, dep_id) VALUES (
+	'sap', --proyecto
 	'1970', --pantalla
 	'4465', --objeto_ci
 	'0', --orden
 	'3216'  --dep_id
+);
+INSERT INTO apex_objetos_pantalla (proyecto, pantalla, objeto_ci, orden, dep_id) VALUES (
+	'sap', --proyecto
+	'1972', --pantalla
+	'4465', --objeto_ci
+	'0', --orden
+	'3246'  --dep_id
+);
+INSERT INTO apex_objetos_pantalla (proyecto, pantalla, objeto_ci, orden, dep_id) VALUES (
+	'sap', --proyecto
+	'1972', --pantalla
+	'4465', --objeto_ci
+	'1', --orden
+	'3247'  --dep_id
 );
 
 ------------------------------------------------------------
@@ -514,6 +609,18 @@ INSERT INTO apex_eventos_pantalla (pantalla, objeto_ci, evento_id, proyecto) VAL
 );
 INSERT INTO apex_eventos_pantalla (pantalla, objeto_ci, evento_id, proyecto) VALUES (
 	'1970', --pantalla
+	'4465', --objeto_ci
+	'3702', --evento_id
+	'sap'  --proyecto
+);
+INSERT INTO apex_eventos_pantalla (pantalla, objeto_ci, evento_id, proyecto) VALUES (
+	'1972', --pantalla
+	'4465', --objeto_ci
+	'3701', --evento_id
+	'sap'  --proyecto
+);
+INSERT INTO apex_eventos_pantalla (pantalla, objeto_ci, evento_id, proyecto) VALUES (
+	'1972', --pantalla
 	'4465', --objeto_ci
 	'3702', --evento_id
 	'sap'  --proyecto

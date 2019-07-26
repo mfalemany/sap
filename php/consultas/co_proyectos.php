@@ -706,5 +706,16 @@ class co_proyectos
 		return isset($r) ? $r : array();
 	}
 
+	function get_tipos_apoyo()
+	{
+		return toba::db()->consultar("SELECT * FROM sap_proyecto_apoyo_tipo");
+	}
+	function get_obj_especificos($id_proyecto,$desc_reducida=FALSE)
+	{
+		$campos = "id_obj_especifico, ";
+		$campos .= ($desc_reducida) ? "SUBSTRING(obj_especifico,0,70)||('...') as obj_especifico" : "obj_especifico"; 
+		return toba::db()->consultar("SELECT $campos FROM sap_proyecto_obj_especifico WHERE id_proyecto = ".quote($id_proyecto));
+	}
+
 }
 ?>

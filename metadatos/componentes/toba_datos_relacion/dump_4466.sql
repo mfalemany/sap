@@ -65,6 +65,30 @@ INSERT INTO apex_objeto_datos_rel (proyecto, objeto, debug, clave, ap, punto_mon
 --- INICIO Grupo de desarrollo 0
 INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
 	'sap', --proyecto
+	'3242', --dep_id
+	'4466', --objeto_consumidor
+	'4497', --objeto_proveedor
+	'obj_especifico_tarea', --identificador
+	NULL, --parametros_a
+	NULL, --parametros_b
+	NULL, --parametros_c
+	NULL, --inicializar
+	'15'  --orden
+);
+INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
+	'sap', --proyecto
+	'3243', --dep_id
+	'4466', --objeto_consumidor
+	'4496', --objeto_proveedor
+	'obj_especifico_tiempo', --identificador
+	NULL, --parametros_a
+	NULL, --parametros_b
+	NULL, --parametros_c
+	NULL, --inicializar
+	'16'  --orden
+);
+INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
+	'sap', --proyecto
 	'3225', --dep_id
 	'4466', --objeto_consumidor
 	'4479', --objeto_proveedor
@@ -158,6 +182,18 @@ INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objet
 	NULL, --parametros_c
 	NULL, --inicializar
 	'12'  --orden
+);
+INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
+	'sap', --proyecto
+	'3241', --dep_id
+	'4466', --objeto_consumidor
+	'4495', --objeto_proveedor
+	'proyecto_obj_especifico', --identificador
+	NULL, --parametros_a
+	NULL, --parametros_b
+	NULL, --parametros_c
+	NULL, --inicializar
+	'14'  --orden
 );
 INSERT INTO apex_objeto_dependencias (proyecto, dep_id, objeto_consumidor, objeto_proveedor, identificador, parametros_a, parametros_b, parametros_c, inicializar, orden) VALUES (
 	'sap', --proyecto
@@ -418,6 +454,54 @@ INSERT INTO apex_objeto_datos_rel_asoc (proyecto, objeto, asoc_id, identificador
 	NULL, --cascada
 	'12'  --orden
 );
+INSERT INTO apex_objeto_datos_rel_asoc (proyecto, objeto, asoc_id, identificador, padre_proyecto, padre_objeto, padre_id, padre_clave, hijo_proyecto, hijo_objeto, hijo_id, hijo_clave, cascada, orden) VALUES (
+	'sap', --proyecto
+	'4466', --objeto
+	'206', --asoc_id
+	NULL, --identificador
+	'sap', --padre_proyecto
+	'2546', --padre_objeto
+	'proyectos', --padre_id
+	NULL, --padre_clave
+	'sap', --hijo_proyecto
+	'4495', --hijo_objeto
+	'proyecto_obj_especifico', --hijo_id
+	NULL, --hijo_clave
+	NULL, --cascada
+	'13'  --orden
+);
+INSERT INTO apex_objeto_datos_rel_asoc (proyecto, objeto, asoc_id, identificador, padre_proyecto, padre_objeto, padre_id, padre_clave, hijo_proyecto, hijo_objeto, hijo_id, hijo_clave, cascada, orden) VALUES (
+	'sap', --proyecto
+	'4466', --objeto
+	'207', --asoc_id
+	NULL, --identificador
+	'sap', --padre_proyecto
+	'4495', --padre_objeto
+	'proyecto_obj_especifico', --padre_id
+	NULL, --padre_clave
+	'sap', --hijo_proyecto
+	'4497', --hijo_objeto
+	'obj_especifico_tarea', --hijo_id
+	NULL, --hijo_clave
+	NULL, --cascada
+	'14'  --orden
+);
+INSERT INTO apex_objeto_datos_rel_asoc (proyecto, objeto, asoc_id, identificador, padre_proyecto, padre_objeto, padre_id, padre_clave, hijo_proyecto, hijo_objeto, hijo_id, hijo_clave, cascada, orden) VALUES (
+	'sap', --proyecto
+	'4466', --objeto
+	'208', --asoc_id
+	NULL, --identificador
+	'sap', --padre_proyecto
+	'4495', --padre_objeto
+	'proyecto_obj_especifico', --padre_id
+	NULL, --padre_clave
+	'sap', --hijo_proyecto
+	'4496', --hijo_objeto
+	'obj_especifico_tiempo', --hijo_id
+	NULL, --hijo_clave
+	NULL, --cascada
+	'15'  --orden
+);
 --- FIN Grupo de desarrollo 0
 
 ------------------------------------------------------------
@@ -620,4 +704,31 @@ INSERT INTO apex_objeto_rel_columnas_asoc (proyecto, objeto, asoc_id, padre_obje
 	'2453', --padre_clave
 	'4487', --hijo_objeto
 	'2545'  --hijo_clave
+);
+INSERT INTO apex_objeto_rel_columnas_asoc (proyecto, objeto, asoc_id, padre_objeto, padre_clave, hijo_objeto, hijo_clave) VALUES (
+	'sap', --proyecto
+	'4466', --objeto
+	'206', --asoc_id
+	'2546', --padre_objeto
+	'2467', --padre_clave
+	'4495', --hijo_objeto
+	'2551'  --hijo_clave
+);
+INSERT INTO apex_objeto_rel_columnas_asoc (proyecto, objeto, asoc_id, padre_objeto, padre_clave, hijo_objeto, hijo_clave) VALUES (
+	'sap', --proyecto
+	'4466', --objeto
+	'207', --asoc_id
+	'4495', --padre_objeto
+	'2550', --padre_clave
+	'4497', --hijo_objeto
+	'2557'  --hijo_clave
+);
+INSERT INTO apex_objeto_rel_columnas_asoc (proyecto, objeto, asoc_id, padre_objeto, padre_clave, hijo_objeto, hijo_clave) VALUES (
+	'sap', --proyecto
+	'4466', --objeto
+	'208', --asoc_id
+	'4495', --padre_objeto
+	'2550', --padre_clave
+	'4496', --hijo_objeto
+	'2553'  --hijo_clave
 );

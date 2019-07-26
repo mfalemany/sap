@@ -243,7 +243,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'descripcion', --identificador
 	'ef_editable', --elemento_formulario
 	'descripcion', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'1', --orden
 	'Denominación', --etiqueta
@@ -323,7 +323,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'fecha_desde', --identificador
 	'ef_editable_fecha', --elemento_formulario
 	'fecha_desde', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'2', --orden
 	'Fecha de Inicio', --etiqueta
@@ -403,7 +403,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'duracion', --identificador
 	'ef_combo', --elemento_formulario
 	'duracion', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'3', --orden
 	'Duración', --etiqueta
@@ -483,7 +483,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'tipo', --identificador
 	'ef_combo', --elemento_formulario
 	'tipo', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'4', --orden
 	'Tipo', --etiqueta
@@ -563,7 +563,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'sap_dependencia_id', --identificador
 	'ef_combo', --elemento_formulario
 	'sap_dependencia_id', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'5', --orden
 	'Lugar de Ejecución', --etiqueta
@@ -643,7 +643,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'sap_area_conocimiento_id', --identificador
 	'ef_combo', --elemento_formulario
 	'sap_area_conocimiento_id', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'6', --orden
 	'Área de Conocimiento', --etiqueta
@@ -723,7 +723,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'id_grupo', --identificador
 	'ef_combo_editable', --elemento_formulario
 	'id_grupo', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'7', --orden
 	'Grupo de Investigación', --etiqueta
@@ -803,7 +803,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'id_area', --identificador
 	'ef_combo', --elemento_formulario
 	'id_area', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'8', --orden
 	'Campo disciplinar', --etiqueta
@@ -883,7 +883,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'id_subarea', --identificador
 	'ef_combo', --elemento_formulario
 	'id_subarea', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'9', --orden
 	'Especialidad', --etiqueta
@@ -963,7 +963,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'id_objetivo_socioeconomico', --identificador
 	'ef_combo', --elemento_formulario
 	'id_objetivo_socioeconomico', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'10', --orden
 	'Objetivo Socio-Económico', --etiqueta
@@ -1043,7 +1043,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'palabras_clave', --identificador
 	'ef_editable', --elemento_formulario
 	'palabras_clave', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'11', --orden
 	'Palabras clave', --etiqueta
@@ -1123,7 +1123,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'id_area_tematica', --identificador
 	'ef_combo', --elemento_formulario
 	'id_area_tematica', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'12', --orden
 	'Área Temática', --etiqueta
@@ -1203,7 +1203,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'id_subarea_prioritaria', --identificador
 	'ef_combo', --elemento_formulario
 	'id_subarea_prioritaria', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'13', --orden
 	'Sub-Área o Tema', --etiqueta

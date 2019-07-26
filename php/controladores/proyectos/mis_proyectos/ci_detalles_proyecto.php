@@ -21,8 +21,7 @@ class ci_detalles_proyecto extends sap_ci
 					array('auxiliar' => 'alumnos',    'tabla' => 'sap_proyecto_alumno'),
 					array('auxiliar' => 'becarios',   'tabla' => 'sap_proyecto_becario'),
 					array('auxiliar' => 'apoyo',      'tabla' => 'sap_proyecto_apoyo'),
-					array('auxiliar' => 'inv_externo','tabla' => 'sap_proyecto_inv_externo'),
-
+					array('auxiliar' => 'inv_externo','tabla' => 'sap_proyecto_inv_externo')
 				);
 				foreach($funciones as $funcion){
 					if( ! isset($this->s__auxiliares[$funcion['auxiliar']]) || ! $this->s__auxiliares[$funcion['auxiliar']] ){
@@ -74,9 +73,10 @@ class ci_detalles_proyecto extends sap_ci
 		}
 
 	}
-	//-----------------------------------------------------------------------------------
-	//---- Eventos ----------------------------------------------------------------------
-	//-----------------------------------------------------------------------------------
+
+	/* =====================================================================================*/
+	/* ============================== EVENTOS ==============================================*/
+	/* =====================================================================================*/
 
 	function evt__guardar()
 	{
@@ -122,6 +122,10 @@ class ci_detalles_proyecto extends sap_ci
 		$this->controlador()->set_pantalla('pant_seleccion_proyecto');
 	}
 
+	/* =====================================================================================*/
+	/* ============================== PANT_FORM_PROYECTO ===================================*/
+	/* =====================================================================================*/
+
 	//-----------------------------------------------------------------------------------
 	//---- form_proyecto ----------------------------------------------------------------
 	//-----------------------------------------------------------------------------------
@@ -157,6 +161,10 @@ class ci_detalles_proyecto extends sap_ci
 		
 		$this->get_datos('proyectos')->set($datos);
 	}
+
+	/* =====================================================================================*/
+	/* ============================== PANT_INTEGRANTES =====================================*/
+	/* =====================================================================================*/
 
 	//-----------------------------------------------------------------------------------
 	//---- ml_integrantes ---------------------------------------------------------------
@@ -205,6 +213,10 @@ class ci_detalles_proyecto extends sap_ci
 		}
 		$evento->ocultar();
 	}
+
+	/* =====================================================================================*/
+	/* ============================== PANT_DETALLES ========================================*/
+	/* =====================================================================================*/
 
 	//-----------------------------------------------------------------------------------
 	//---- form_detalles_pi -------------------------------------------------------------
@@ -274,6 +286,10 @@ class ci_detalles_proyecto extends sap_ci
 		$this->get_datos('proyecto_agente_financiero')->procesar_filas($datos);
 	}
 
+	/* =====================================================================================*/
+	/* ============================== PANT_RECURSOS_HUMANOS ================================*/
+	/* =====================================================================================*/
+
 	//-----------------------------------------------------------------------------------
 	//---- ml_tesistas ------------------------------------------------------------------
 	//-----------------------------------------------------------------------------------
@@ -338,6 +354,126 @@ class ci_detalles_proyecto extends sap_ci
 		}
 	}
 
+	//-----------------------------------------------------------------------------------
+	//---- ml_inv_externos --------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_inv_externos(sap_ei_formulario_ml $form_ml)
+	{
+		$this->configurar_formulario($form_ml,'X','inv_externo');
+	}
+
+	function evt__ml_inv_externos__modificacion($datos)
+	{
+		foreach($datos as $inv_externo){
+			$this->s__auxiliares['inv_externo'][$inv_externo['nro_documento']] = array(
+				'nro_documento'  => $inv_externo['nro_documento'],
+				'institucion'     => $inv_externo['institucion'],
+				'cargo_docente'     => $inv_externo['cargo_docente']
+			);
+		}
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- ml_apoyo ---------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_apoyo(sap_ei_formulario_ml $form_ml)
+	{
+		$this->configurar_formulario($form_ml,'T','apoyo');
+	}
+
+	function evt__ml_apoyo__modificacion($datos)
+	{
+		foreach($datos as $apoyo){
+			$this->s__auxiliares['apoyo'][$apoyo['nro_documento']] = array(
+				'nro_documento'  => $apoyo['nro_documento'],
+				'id_tipo_apoyo'     => $apoyo['id_tipo_apoyo'],
+				'id_dependencia'     => $apoyo['id_dependencia']
+			);
+		}
+	}
+
+	/* =====================================================================================*/
+	/* ============================== PANT_NECES_PRESUP ====================================*/
+	/* =====================================================================================*/
+
+	//-----------------------------------------------------------------------------------
+	//---- form_necesidades_presup ------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__form_necesidades_presup(sap_ei_formulario_ml $form_ml)
+	{
+		$datos = $this->get_datos('proy_presupuesto')->get_filas();
+		if($datos){
+			$form_ml->set_datos($datos);
+		}
+	}
+
+	function evt__form_necesidades_presup__modificacion($datos)
+	{
+		$this->get_datos('proy_presupuesto')->procesar_filas($datos);
+	}
+
+	/* =====================================================================================*/
+	/* ============================== PANT_PLAN TAREAS =====================================*/
+	/* =====================================================================================*/
+	
+	//-----------------------------------------------------------------------------------
+	//---- ml_obj_especificos -----------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_obj_especificos(sap_ei_formulario_ml $form_ml)
+	{
+		$datos = $this->get_datos('proyecto_obj_especifico')->get_filas();
+		if($datos){
+			$form_ml->set_datos($datos);
+		}
+		$form_ml->agregar_notificacion('Indicar la secuencia de metas parciales o hitos que indican el alcance de los objetivos especificos propuestos','info');
+	}
+
+	function evt__ml_obj_especificos__modificacion($datos)
+	{
+		$this->get_datos('proyecto_obj_especifico')->procesar_filas($datos);
+	}
+	function evt__ml_obj_especificos__seleccion($datos)
+	{
+		$this->get_datos('proyecto_obj_especifico')->set_cursor($datos);
+	}
+
+	function get_obj_especificos()
+	{
+		if(isset($this->s__id_proyecto)){
+			return toba::consulta_php('co_proyectos')->get_obj_especificos($this->s__id_proyecto,TRUE);
+		}
+	}
+
+	//-----------------------------------------------------------------------------------
+	//---- ml_tareas --------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__ml_tareas(sap_ei_formulario_ml $form_ml)
+	{
+		$datos = $this->get_datos('obj_especifico_tarea')->get_filas();
+		if($datos){
+			$form_ml->set_datos($datos);
+			$objetivo = $this->get_datos('proyecto_obj_especifico')->get();
+			$form_ml->set_titulo('Tareas relacionadas con el objetivo: '.$objetivo['obj_especifico']);
+		}
+		$form_ml->agregar_notificacion('Indicar la secuencia de actividades para el logro de este objetivo específico','info');
+	}
+
+	function evt__ml_tareas__modificacion($datos)
+	{
+		$this->get_datos('obj_especifico_tarea')->procesar_filas($datos);
+		$this->get_datos('proyecto_obj_especifico')->resetear_cursor();
+	}
+
+	function evt__ml_tareas__cancelar()
+	{
+		$this->get_datos('proyecto_obj_especifico')->resetear_cursor();
+	}
+	
 
 
 	//-----------------------------------------------------------------------------------
@@ -461,6 +597,9 @@ class ci_detalles_proyecto extends sap_ci
 
 	function registrar_cambios_integrantes()
 	{
+		if( !isset($this->s__auxiliares)){
+			return;
+		}
 		if(isset($this->s__id_proyecto)){
 			toba::consulta_php('co_proyectos')->eliminar_auxiliares($this->s__id_proyecto);
 		}
@@ -521,11 +660,34 @@ class ci_detalles_proyecto extends sap_ci
 		}
 
 	}
-	
+
+	function get_anios_nec_presup()
+	{
+		$opciones = array();
+		$proyecto = $this->get_datos('proyectos')->get();
+		$anio_inicio = date('Y',strtotime($proyecto['fecha_desde']));
+		for($i=0; $i<$this->s__duracion; $i++){
+			$opciones[] = array('anio'=>($anio_inicio+$i));
+		}
+		return $opciones;
+	}
 
 	
 
 	
+
+	
+
+	//-----------------------------------------------------------------------------------
+	//---- Configuraciones --------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__pant_plan_tareas(toba_ei_pantalla $pantalla)
+	{
+		if( ! $this->get_datos('proyecto_obj_especifico')->hay_cursor()){
+			$this->pantalla()->eliminar_dep('ml_tareas');
+		}
+	}
 
 }
 ?>
