@@ -716,6 +716,14 @@ class co_proyectos
 		$campos .= ($desc_reducida) ? "SUBSTRING(obj_especifico,0,70)||('...') as obj_especifico" : "obj_especifico"; 
 		return toba::db()->consultar("SELECT $campos FROM sap_proyecto_obj_especifico WHERE id_proyecto = ".quote($id_proyecto));
 	}
+	function get_objetivos_tiempos($id_proyecto)
+	{
+		$sql = "SELECT ti.id_obj_especifico, ti.semestre, ti.anio, obj.obj_especifico
+				FROM sap_obj_especifico_tiempo AS ti
+				LEFT JOIN sap_proyecto_obj_especifico AS obj USING (id_obj_especifico)
+				WHERE id_proyecto = ".quote($id_proyecto);
+		return toba::db()->consultar($sql);
+	}
 
 }
 ?>

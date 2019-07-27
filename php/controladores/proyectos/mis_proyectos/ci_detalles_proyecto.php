@@ -418,7 +418,25 @@ class ci_detalles_proyecto extends sap_ci
 	/* =====================================================================================*/
 	/* ============================== PANT_PLAN TAREAS =====================================*/
 	/* =====================================================================================*/
-	
+
+	//-----------------------------------------------------------------------------------
+	//---- Configuraciones --------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+
+	function conf__pant_plan_tareas(toba_ei_pantalla $pantalla)
+	{
+		if( ! $this->get_datos('proyecto_obj_especifico')->hay_cursor()){
+			$this->pantalla()->eliminar_dep('ml_tareas');
+		}
+		$template =  "<table width='100%'>
+						<caption style='font-size:1.2em; font-weight:bold; background-color: #575b98; color:white; padding: 4px 0px;'>Cada objetivo específico está compuesto por una o varias tareas que lo componen. Una vez declarado cada objetivo específico, debe detallar dichas tareas, haciendo click en el botón 'Ver tareas relacionadas'.</caption>";
+		$template .= "<tbody><tr><td>[dep id=ml_obj_especificos]</td></tr>";
+		$template .= ($pantalla->existe_dependencia('ml_tareas')) ? "<tr style='margin-top:25px;'><td>[dep id=ml_tareas]</td></tr>" : "";
+		$template .= "</tbody></table>";
+		$pantalla->set_template($template);
+		
+	}
+
 	//-----------------------------------------------------------------------------------
 	//---- ml_obj_especificos -----------------------------------------------------------
 	//-----------------------------------------------------------------------------------
@@ -473,12 +491,67 @@ class ci_detalles_proyecto extends sap_ci
 	{
 		$this->get_datos('proyecto_obj_especifico')->resetear_cursor();
 	}
-	
 
+	/* =====================================================================================*/
+	/* ============================== PANT_CRONOGRAMA ======================================*/
+	/* =====================================================================================*/
+	function conf__pant_cronograma(toba_ei_pantalla $pantalla)
+	{
+		//Numeros ordinales para la generación de cuadro cronograma
+		$ordinal = array('1'=>'Primer','2'=>'Segundo','3'=>'Tercer','4'=>'Cuarto');
+		
+		$objetivos = toba::consulta_php('co_proyectos')->get_objetivos_tiempos($this->s__id_proyecto);
+
+		if(!$objetivos){
+			return; //si no se han definido tiempos, esto no tiene sentido.
+		}
+
+		$objs_tiempos = array();
+		foreach($objetivos as $objetivo){
+			$objs_tiempos[$objetivo['anio']][$objetivo['semestre']][] = $objetivo['id_obj_especifico'];
+		}
+		$anios_proyecto = $this->get_anios_proyecto();
+		
+		$datos = array(
+			'duracion'       => $this->s__duracion,
+			'ordinal'        => $ordinal,
+			'objetivos'      => $objetivos,
+			'objs_tiempos'   => $objs_tiempos,
+			'anios_proyecto' => $anios_proyecto
+		);
+		//ei_arbol($datos);
+
+		$template = __DIR__."/template_cronograma.php";
+		$cronograma = $this->armar_template_con_logica($template,$datos);
+		$template = "";
+		foreach ($pantalla->get_lista_dependencias() as $dependencia) {
+			$template .= "[dep id=$dependencia]";
+		}
+		$pantalla->set_template($template.$cronograma);
+
+	}
 
 	//-----------------------------------------------------------------------------------
-	//---- Javascript -------------------------------------------------------------------
+	//---- ml_cronograma ----------------------------------------------------------------
 	//-----------------------------------------------------------------------------------
+
+	function conf__ml_cronograma(sap_ei_formulario_ml $form_ml)
+	{
+		$datos = $this->get_datos('obj_especifico_tiempo')->get_filas();
+		if($datos){
+			$form_ml->set_datos($datos);
+		}
+
+	}
+
+	function evt__ml_cronograma__modificacion($datos)
+	{
+		$this->get_datos('obj_especifico_tiempo')->procesar_filas($datos);
+	}
+
+	/* =====================================================================================*/
+	/* ============================== JAVASCRIPT ===========================================*/
+	/* =====================================================================================*/
 
 	function extender_objeto_js()
 	{
@@ -491,9 +564,16 @@ class ci_detalles_proyecto extends sap_ci
 		";
 	}
 
-	//-----------------------------------------------------------------------------------
-	//---- Auxiliares -------------------------------------------------------------------
-	//-----------------------------------------------------------------------------------
+	/* =====================================================================================*/
+	/* ============================== AUXILIARES DEL CI ====================================*/
+	/* =====================================================================================*/
+	/**
+	 * Comportamiento comun a los formularios de carga de tablas auxiliares de integrantes. Todos los formularios de este tipo tienen el mismo comportamiento. Modifican el estado de la variable de sesión $this->s__auxiliares, en sus distintas dimensiones
+	 * @param  toba_ei_formulario_ml &$formulario          Formulario que se está editando
+	 * @param  string $identificador_perfil Letra que identifica el perfil que tiene el integrante
+	 * @param  string $auxiliar             String que representa la dimensión que hay que modificar del array $this->s__auxiliares
+	 * @return void                       
+	 */
 	function configurar_formulario(&$formulario,$identificador_perfil,$auxiliar)
 	{
 		$integrantes = $this->get_datos('proyecto_integrante')->get_filas();
@@ -565,6 +645,12 @@ class ci_detalles_proyecto extends sap_ci
 		}
 	}
 
+	/**
+	 * Valida las condiciones que deben cumplir los integrantes del proyecto en relación a los perfiles que cumplen. Por ejemplo, solo puede haber (y debe haber) un director, mientras que otros perfiles como el subdirector y el codirector, son opcionales, pero en caso de existir, tambien deben ser únicos.
+	 * @param  array $integrantes         Integrantes declarados por el usuario
+	 * @param  array $perfiles_validacion Array que contiene los perfiles y las condiciones de cada uno
+	 * @return void                      Si bien esta funcion no retorna ningún valor, en caso de error, lanza una excepcion de tipo Exception
+	 */
 	function validar_perfiles($integrantes,$perfiles_validacion)
 	{
 		//El array $perfiles, contiene la distribucion de funciones, es decir:
@@ -595,6 +681,10 @@ class ci_detalles_proyecto extends sap_ci
 		}
 	}
 
+	/**
+	 * Por cada vez que se guarda el proyecto (se ejecuta el método evt__guardar()), este método se encarga de regenerar todos los registros de las tablas auxiliares de integrantes. Esto se debe a que, durante la carga, el usuario puede realizar modificaciones en las funciones de las personas, lo que hace que esa persona deje de existir en una tabla, y aparezca como nuevo en otra. Para evitar gestionar todas esas modificaciones, cuando el usuario guarda el proyecto, se elimina todo estado anterior y se vuelven a generar con los detalles que haya guardado el usuario. Durante la carga, las modificaciones realizadas se mantienen en la variable de sesion $this->s__auxiliares.
+	 * @return vid 
+	 */
 	function registrar_cambios_integrantes()
 	{
 		if( !isset($this->s__auxiliares)){
@@ -632,6 +722,11 @@ class ci_detalles_proyecto extends sap_ci
 		}
 	}
 
+	/**
+	 * Valida las condiciones de unicidad entre los integrantes. Un integrante puede estar definido mas de una vez, pero debe tener funciones distintas
+	 * @param  array $integrantes Arreglo de integrantes cargados por el usuario
+	 * @return void              Si bien esta funcion no devuelve ningun valor, en caso de error lanza una excepcion de tipo toba_error
+	 */
 	function existen_duplicados($integrantes)
 	{
 		$mensajes = array();
@@ -661,7 +756,11 @@ class ci_detalles_proyecto extends sap_ci
 
 	}
 
-	function get_anios_nec_presup()
+	/**
+	 * Retorna un array que contiene los años en los cuales tiene vigencia el proyecto. Esto depende de la fecha de inicio y de la duración declarados por el usuario
+	 * @return array Arreglo con los años de duración del proyecto
+	 */
+	function get_anios_proyecto()
 	{
 		$opciones = array();
 		$proyecto = $this->get_datos('proyectos')->get();
@@ -670,23 +769,6 @@ class ci_detalles_proyecto extends sap_ci
 			$opciones[] = array('anio'=>($anio_inicio+$i));
 		}
 		return $opciones;
-	}
-
-	
-
-	
-
-	
-
-	//-----------------------------------------------------------------------------------
-	//---- Configuraciones --------------------------------------------------------------
-	//-----------------------------------------------------------------------------------
-
-	function conf__pant_plan_tareas(toba_ei_pantalla $pantalla)
-	{
-		if( ! $this->get_datos('proyecto_obj_especifico')->hay_cursor()){
-			$this->pantalla()->eliminar_dep('ml_tareas');
-		}
 	}
 
 }

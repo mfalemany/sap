@@ -486,22 +486,6 @@ INSERT INTO apex_objeto_datos_rel_asoc (proyecto, objeto, asoc_id, identificador
 	NULL, --cascada
 	'14'  --orden
 );
-INSERT INTO apex_objeto_datos_rel_asoc (proyecto, objeto, asoc_id, identificador, padre_proyecto, padre_objeto, padre_id, padre_clave, hijo_proyecto, hijo_objeto, hijo_id, hijo_clave, cascada, orden) VALUES (
-	'sap', --proyecto
-	'4466', --objeto
-	'208', --asoc_id
-	NULL, --identificador
-	'sap', --padre_proyecto
-	'4495', --padre_objeto
-	'proyecto_obj_especifico', --padre_id
-	NULL, --padre_clave
-	'sap', --hijo_proyecto
-	'4496', --hijo_objeto
-	'obj_especifico_tiempo', --hijo_id
-	NULL, --hijo_clave
-	NULL, --cascada
-	'15'  --orden
-);
 --- FIN Grupo de desarrollo 0
 
 ------------------------------------------------------------
@@ -722,13 +706,4 @@ INSERT INTO apex_objeto_rel_columnas_asoc (proyecto, objeto, asoc_id, padre_obje
 	'2550', --padre_clave
 	'4497', --hijo_objeto
 	'2557'  --hijo_clave
-);
-INSERT INTO apex_objeto_rel_columnas_asoc (proyecto, objeto, asoc_id, padre_objeto, padre_clave, hijo_objeto, hijo_clave) VALUES (
-	'sap', --proyecto
-	'4466', --objeto
-	'208', --asoc_id
-	'4495', --padre_objeto
-	'2550', --padre_clave
-	'4496', --hijo_objeto
-	'2553'  --hijo_clave
 );

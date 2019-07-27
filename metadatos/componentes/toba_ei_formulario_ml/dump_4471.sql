@@ -138,7 +138,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'anio', --identificador
 	'ef_combo', --elemento_formulario
 	'anio', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'1', --orden
 	'Año', --etiqueta
@@ -154,7 +154,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	NULL, --estado_defecto
 	'0', --solo_lectura
 	'0', --solo_lectura_modificacion
-	'get_anios_nec_presup', --carga_metodo
+	'get_anios_proyecto', --carga_metodo
 	NULL, --carga_clase
 	NULL, --carga_include
 	NULL, --carga_dt
@@ -218,7 +218,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'id_rubro', --identificador
 	'ef_combo', --elemento_formulario
 	'id_rubro', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'2', --orden
 	'Rubro', --etiqueta
@@ -298,7 +298,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'descripcion', --identificador
 	'ef_editable', --elemento_formulario
 	'descripcion', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'3', --orden
 	'Descripción', --etiqueta
@@ -378,7 +378,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'justificacion', --identificador
 	'ef_editable', --elemento_formulario
 	'justificacion', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'4', --orden
 	'Justificacion', --etiqueta
@@ -458,7 +458,7 @@ INSERT INTO apex_objeto_ei_formulario_ef (objeto_ei_formulario_fila, objeto_ei_f
 	'monto', --identificador
 	'ef_editable_moneda', --elemento_formulario
 	'monto', --columnas
-	'0', --obligatorio
+	'1', --obligatorio
 	'0', --oculto_relaja_obligatorio
 	'5', --orden
 	'Monto', --etiqueta
