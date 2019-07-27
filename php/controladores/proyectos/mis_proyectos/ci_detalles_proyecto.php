@@ -82,10 +82,9 @@ class ci_detalles_proyecto extends sap_ci
 	{
 		try {
 			if($this->validar_integrantes()){
-				
-				
 				//Sincronizo con fuente
 				toba::db()->ejecutar("BEGIN; LOCK TABLE sap_proyectos IN EXCLUSIVE MODE;");
+
 				$this->get_datos()->sincronizar();
 				$id = toba::db()->consultar_fila("SELECT max(id) as id FROM sap_proyectos;");
 				$this->s__id_proyecto = $id['id'];
@@ -104,11 +103,11 @@ class ci_detalles_proyecto extends sap_ci
 					break;
 				
 				default:
-					$mensaje = "Ocurrió el siguiente error desconocido: ".$e->get_mensaje();
+					$mensaje = "Ocurrió el siguiente error no esperado. Por favor, comuniquese con la Secretaría General de Ciencia y Técnica para obtener ayuda. De ser posible, realice una captura de pantalla del error y guardela, para facilitar la identificación del problema.";
 					break;
 			}
 			
-			toba::notificacion()->agregar($mensaje.$e->get_sqlstate().$e->get_mensaje_motor());
+			toba::notificacion()->agregar($mensaje.$e->get_sql_ejecutado().$e->get_mensaje());
 		} catch (Exception $e) {
 			toba::notificacion()->agregar('Ocurrió el siguiente problema: '.$e->getMessage());
 		}
@@ -519,8 +518,6 @@ class ci_detalles_proyecto extends sap_ci
 			'objs_tiempos'   => $objs_tiempos,
 			'anios_proyecto' => $anios_proyecto
 		);
-		//ei_arbol($datos);
-
 		$template = __DIR__."/template_cronograma.php";
 		$cronograma = $this->armar_template_con_logica($template,$datos);
 		$template = "";
@@ -707,16 +704,18 @@ class ci_detalles_proyecto extends sap_ci
 			if(! array_key_exists($funcion['auxiliar'], $this->s__auxiliares)){
 				continue;	
 			}
+			
 			foreach($this->s__auxiliares[$funcion['auxiliar']] as $elementos){
 
-				$campos = array('id_proyecto','id_funcion');
-				$valores = array($this->s__id_proyecto,$perfil['id_funcion']);
+
+				$cambios = array('id_proyecto' => $this->s__id_proyecto,'id_funcion' => $perfil['id_funcion']);
+				
 				foreach($elementos as $campo => $valor){
-					$campos[] = $campo;
-					$valores[] = quote($valor);
+					$cambios[$campo] = quote($valor);
 				}
-				$campos = implode(',',$campos);
-				$valores = implode(',',$valores);
+				$campos = implode(',',array_keys($cambios));
+				$valores = implode(',',array_values($cambios));
+				
 				toba::db()->ejecutar("INSERT INTO {$funcion['tabla']} ($campos) VALUES ($valores)");
 			}
 		}

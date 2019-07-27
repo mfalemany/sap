@@ -387,7 +387,7 @@ INSERT INTO apex_objeto_ci_pantalla (objeto_ci_proyecto, objeto_ci, pantalla, id
 	'4465', --objeto_ci
 	'1967', --pantalla
 	'pant_detalles', --identificador
-	'3', --orden
+	'4', --orden
 	'Detalles', --etiqueta
 	NULL, --descripcion
 	NULL, --tip
@@ -406,7 +406,7 @@ INSERT INTO apex_objeto_ci_pantalla (objeto_ci_proyecto, objeto_ci, pantalla, id
 	'4465', --objeto_ci
 	'1969', --pantalla
 	'pant_recursos_humanos', --identificador
-	'4', --orden
+	'3', --orden
 	'Recursos Humanos', --etiqueta
 	NULL, --descripcion
 	NULL, --tip
